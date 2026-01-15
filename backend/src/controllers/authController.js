@@ -1,0 +1,2 @@
+export const signUpController = async () => {
+}
