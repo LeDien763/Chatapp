@@ -1,6 +1,6 @@
 import {BrowserRouter, Routes, Route} from 'react-router'
+import SignUpPage from './pages/SignUpPage'
 import SignInPage from './pages/SignInPage'
-import SignOutPage from './pages/SignOutPage'
 import ChatAppPage from './pages/ChatAppPage'
 import {Toaster} from 'sonner'
 function App() {
@@ -9,8 +9,8 @@ function App() {
       <Toaster richColors />
      <BrowserRouter>
       <Routes>
+        <Route path="/signup" element={<SignUpPage />} />
         <Route path="/signin" element={<SignInPage />} />
-        <Route path="/signout" element={<SignOutPage />} />
         <Route path="/" element={<ChatAppPage />} />
       </Routes>
       </BrowserRouter>
