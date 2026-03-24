@@ -6,11 +6,12 @@ import { Label } from "../ui/label"
 import {z} from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-
+import { useAuthStore } from "@/stores/useAuthStore"
+import { useNavigate } from "react-router"
 const signUpSchema =z.object({
-  firstname: z.string().min(1, "Vui lòng nhập tên của bạn"),
-  lastname: z.string().min(1, "Vui lòng nhập họ của bạn"),
-  username: z.string().min(3, "Tên đăng nhập phải có ít nhất 3 ký tự").max(20, "Tên đăng nhập không được vượt quá 20 ký tự"),
+  firstName: z.string().min(1, "Vui lòng nhập tên của bạn"),
+  lastName: z.string().min(1, "Vui lòng nhập họ của bạn"),
+  userName: z.string().min(3, "Tên đăng nhập phải có ít nhất 3 ký tự").max(20, "Tên đăng nhập không được vượt quá 20 ký tự"),
   email: z.email("Vui lòng nhập email hợp lệ"),
   password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự")
   .regex(/[A-Z]/, "Mật khẩu phải chứa ít nhất một chữ cái viết hoa")
@@ -20,6 +21,7 @@ const signUpSchema =z.object({
   repassword: z.string().min(6, "Vui lòng xác nhận mật khẩu")
 }).refine((data) => data.password === data.repassword, {
   message: "Mật khẩu xác nhận không khớp",
+  path: ["repassword"],
 })
 
 type SignUpFormValues= z.infer<typeof signUpSchema>
@@ -27,12 +29,16 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-
+  const {signUp} = useAuthStore();
+  const navigate = useNavigate();
   const {register, handleSubmit, formState:{errors, isSubmitting}}= useForm<SignUpFormValues>({
   resolver: zodResolver(signUpSchema)
   });
 
-  const onSubmit = (data: SignUpFormValues) => {
+  const onSubmit = async (data: SignUpFormValues) => {
+    const {firstName, lastName, userName, email, password, repassword} = data;
+    await signUp(userName, password, repassword, email, firstName, lastName);
+    navigate("/signin");
   }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -54,50 +60,50 @@ export function SignupForm({
                 {/* họ và tên */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="lastname" className="block text-sm">
+                    <Label htmlFor="lastName" className="block text-sm">
                       Họ
                     </Label>
-                    <Input id="lastname" 
+                    <Input id="lastName" 
                     type="text" 
-                    {...register("lastname")}
+                    {...register("lastName")}
                     />
-                    {errors.lastname &&
+                    {errors.lastName &&
                     (
                       <p className="text-destructive text-sm">
-                        {errors.lastname.message}
+                        {errors.lastName.message}
                       </p>
                     )}
                   </div>
                     <div className="space-y-2">
-                    <Label htmlFor="firstname" className="block text-sm">
+                    <Label htmlFor="firstName" className="block text-sm">
                       Tên
                     </Label>
-                    <Input id="firstname" 
+                    <Input id="firstName" 
                     type="text" 
-                    {...register("firstname")}
+                    {...register("firstName")}
                     />
-                    {errors.firstname &&
+                    {errors.firstName &&
                     (
                       <p className="text-destructive text-sm">
-                        {errors.firstname.message}
+                        {errors.firstName.message}
                       </p>
                     )}
                   </div>
                 </div>
                 {/* username */}
                 <div className="flex flex-col gap-3">
-                    <Label htmlFor="username" className="block text-sm">
+                    <Label htmlFor="userName" className="block text-sm">
                       Tên đăng nhập
                     </Label>
-                    <Input id="username" 
+                    <Input id="userName" 
                     type="text" 
                     placeholder="Chatapp"
-                    {...register("username")}
+                    {...register("userName")}
                     />
-                    {errors.username &&
+                    {errors.userName &&
                     (
                       <p className="text-destructive text-sm">
-                        {errors.username.message}
+                        {errors.userName.message}
                       </p>
                     )}
                 </div>
