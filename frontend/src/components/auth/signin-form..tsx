@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 const signInSchema =z.object({
-  username: z.string().min(3, "Tên đăng nhập phải có ít nhất 3 ký tự").max(20, "Tên đăng nhập không được vượt quá 20 ký tự"),
+  userName: z.string().min(3, "Tên đăng nhập phải có ít nhất 3 ký tự").max(20, "Tên đăng nhập không được vượt quá 20 ký tự"),
   password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự")
   .regex(/[A-Z]/, "Mật khẩu phải chứa ít nhất một chữ cái viết hoa")
   .regex(/[a-z]/, "Mật khẩu phải chứa ít nhất một chữ cái viết thường")
@@ -47,18 +47,18 @@ export function SignInForm({
                 </div>
                 {/* username */}
                 <div className="flex flex-col gap-3">
-                    <Label htmlFor="username" className="block text-sm">
+                    <Label htmlFor="userName" className="block text-sm">
                       Tên đăng nhập
                     </Label>
-                    <Input id="username" 
+                    <Input id="userName" 
                     type="text" 
                     placeholder="Chatapp"
-                    {...register("username")}
+                    {...register("userName")}
                     />
-                    {errors.username &&
+                    {errors.userName &&
                     (
                       <p className="text-destructive text-sm">
-                        {errors.username.message}
+                        {errors.userName.message}
                       </p>
                     )}
                 </div>
