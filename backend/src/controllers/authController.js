@@ -2,8 +2,8 @@ import * as authService from '../services/authService.js';
 
 export const signUpController = async (req, res) => {
     try {
-        const { userName, password, email, firstName, lastName } = req.body;
-        await authService.signUp({ userName, password, email, firstName, lastName });
+        const { userName, password, repassword, email, firstName, lastName } = req.body;
+        await authService.signUp({ userName, password, repassword, email, firstName, lastName });
         return res.sendStatus(204);
     } catch (error) {
         console.error("Error during user sign-up:", error);
