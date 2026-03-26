@@ -4,7 +4,7 @@ import Session from '../models/Session.js';
 import { generateAccessToken, generateRefreshToken } from '../libs/token.js';
 
 // Đăng ký người dùng
-export const signUp = async ({ userName, password, email, firstName, lastName }) => {
+export const signUp = async ({ userName, password, repassword, email, firstName, lastName }) => {
     // Kiểm tra dữ liệu đầu vào
     if (!userName || !password || !email || !firstName || !lastName) {
         throw {
@@ -21,7 +21,21 @@ export const signUp = async ({ userName, password, email, firstName, lastName })
             message: "Username already exists."
         };
     }
-
+    // Kiểm tra email đã tồn tại
+    const duplicateEmail = await User.findOne({ email });
+    if (duplicateEmail) {
+        throw {
+            status: 409,
+            message: "Email already exists."
+        };
+    }
+    // Kiểm tra mật khẩu xác nhận có khớp không
+    if (password !== repassword) {
+        throw {
+            status: 400,
+            message: "Password and confirmation password do not match."
+        };
+    }
     // Mã hóa password và tạo user mới
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
