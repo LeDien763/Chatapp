@@ -23,7 +23,7 @@ export const signInController = async (req, res) => {
             sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
-        
+        console.log("User signed in successfully:", result);
         return res.status(200).json({
             message: result.message,
             user: result.user,
@@ -49,4 +49,21 @@ export const signOutController = async (req, res) => {
         console.error("Error during user sign-out:", error);
         return res.status(500).json({ message: "Internal server error" });
     } 
+}
+export const refreshTokenController = async (req, res) => {
+    try {
+        const refreshToken = req.cookies?.refreshToken;
+        if (!refreshToken) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+        const result = await authService.refreshToken(refreshToken);
+        return res.status(200).json({
+            accessToken: result.accessToken
+        });
+    } catch (error) {
+        console.error("Error during token refresh:", error);
+        const status = error.status || 500;
+        const message = error.message || "Internal server error";
+        return res.status(status).json({ message });
+    }
 }

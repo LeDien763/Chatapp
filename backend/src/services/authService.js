@@ -2,7 +2,10 @@ import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 import Session from '../models/Session.js';
 import { generateAccessToken, generateRefreshToken } from '../libs/token.js';
-
+import crypto from "crypto";
+const hashToken = (token) => {
+  return crypto.createHash("sha256").update(token).digest("hex");
+};
 // Đăng ký người dùng
 export const signUp = async ({ userName, password, repassword, email, firstName, lastName }) => {
     // Kiểm tra dữ liệu đầu vào
@@ -81,10 +84,13 @@ export const signIn = async ({ userName, password }) => {
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 
+    // Hash refresh token trước khi lưu DB (bảo mật)
+    const hashedRefreshToken = hashToken(refreshToken);
+
     // Lưu session
     await Session.create({
         userId: user._id,
-        refreshToken,
+        refreshToken: hashedRefreshToken,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     });
 
@@ -99,10 +105,13 @@ export const signIn = async ({ userName, password }) => {
 // Đăng xuất
 export const signOut = async (refreshToken) => {
     if (!refreshToken) {
-        return { message: "Sign-out successful" };
+        throw {
+            status: 400,
+            message: "Refresh token is required."
+        };
     }
-
-    await Session.deleteOne({ refreshToken });
+    const hashedRefreshToken = hashToken(refreshToken);
+    await Session.deleteOne({ refreshToken: hashedRefreshToken });
     return { message: "Sign-out successful" };
 };
 
@@ -123,3 +132,33 @@ export const authMe = async (userId) => {
         displayName: user.displayName
     };
 };
+export const refreshToken = async (refreshToken) => {
+    if (!refreshToken) {
+        throw {
+            status: 401,
+            message: "Unauthorized"
+        };
+    }
+    const hashedRefreshToken = hashToken(refreshToken);
+    const session = await Session.findOne({ refreshToken: hashedRefreshToken });
+    if (!session ) {
+        throw { 
+            status: 401,
+            message: "Unauthorized"
+        };
+    }   
+    if (session.expiresAt < new Date()) {
+        await Session.deleteOne({ _id: session._id });
+        throw {
+            status: 401,
+            message: "Refresh token expired"
+        };
+    }
+    const userId = session.userId;
+    const newAccessToken = generateAccessToken(userId);
+    session.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await session.save();
+    return {
+        accessToken: newAccessToken,
+    };
+}
