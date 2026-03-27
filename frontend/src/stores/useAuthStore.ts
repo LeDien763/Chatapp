@@ -26,7 +26,7 @@ export const useAuthStore = create<AuthState>((set,get)=>({
         try {
             set({loading: true});
             const data = await authService.signIn(userName, password);
-            set({accessToken: data.accessToken, user: data.user});
+            get().setAccessToken(data.accessToken);
             toast.success("Đăng nhập thành công!");
             console.log("User info:", data);
         }
@@ -45,6 +45,7 @@ export const useAuthStore = create<AuthState>((set,get)=>({
             get().clearState();
             await authService.signOut();
             set({accessToken: null, user: null});
+            get().setAccessToken("");
             toast.success("Đăng xuất thành công!");
         }
         catch (error) {
@@ -69,5 +70,25 @@ export const useAuthStore = create<AuthState>((set,get)=>({
             set({loading: false});
 
         }
-    }
+    },
+    refresh: async () => {
+        try {
+            set({loading: true});
+            const {user, fetchMe, setAccessToken} = get();
+            const accessToken = await authService.refresh();
+            setAccessToken(accessToken);
+            if (!user) {
+                await fetchMe();
+            }
+        }
+        catch (error) {
+            console.error( error);
+            toast.error("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+            get().clearState();
+        }
+        finally {
+            set({loading: false});
+        }
+    },
+    setAccessToken: (accessToken) => set({accessToken}) 
 }))
