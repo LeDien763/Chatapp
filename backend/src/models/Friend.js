@@ -1,14 +1,13 @@
 import mongoose from "mongoose";
 const friendSchema = new mongoose.Schema({
-    UserA: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    UserB: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userA: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userB: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
-friendSchema.pre('save', async function (next) {
-    if (this.UserA.toString() > this.UserB.toString()) {
-        [this.UserA, this.UserB] = [this.UserB, this.UserA];
-    }
-    next();
+friendSchema.pre('save', async function() {
+    if (this.userA.toString() > this.userB.toString()) {
+        [this.userA, this.userB] = [this.userB, this.userA];
+    }       
 });
-friendSchema.index({ UserA: 1, UserB: 1 }, { unique: true });
+friendSchema.index({ userA: 1, userB: 1 }, { unique: true });
 const Friend = mongoose.model("Friend", friendSchema);
 export default Friend;

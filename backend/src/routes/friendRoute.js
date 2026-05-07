@@ -2,13 +2,12 @@ import { sendFriendRequestController,
     acceptFriendRequestController,
     rejectFriendRequestController,
     getFriendRequestsController, 
-    getFriendsListController } from "../controllers/friendController";
+    getFriendsListController } from "../controllers/friendController.js";
 import express from "express";
-import { authenticateToken } from "../middleware/authMiddleware";
 const router = express.Router();
-router.post("/send", authenticateToken, sendFriendRequestController);
-router.post("/accept/:requestId", authenticateToken, acceptFriendRequestController);
-router.post("/reject/:requestId", authenticateToken, rejectFriendRequestController);
-router.get("/requests", authenticateToken, getFriendRequestsController);
-router.get("/", authenticateToken, getFriendsListController);
+router.post("/send", sendFriendRequestController);
+router.post("/accept/:requestId", acceptFriendRequestController);
+router.post("/reject/:requestId", rejectFriendRequestController);
+router.get("/requests", getFriendRequestsController);
+router.get("/", getFriendsListController);
 export default router;

@@ -130,11 +130,12 @@ export const getFriendsListService = async (userId) => {
     });
 };
 export const getFriendRequestsService = async (userId) => {
-    return await FriendRequest.find({
-        recipient: userId
-    })
-    .populate({
-        path: 'requester',
-        select: '_id displayName avatarUrl'
-    });
+    const [sentRequsests, receivedRequests] = await Promise.all([
+        FriendRequest.find({ requester: userId }).populate('recipient', '_id displayName avatarUrl').lean(),
+        FriendRequest.find({ recipient: userId }).populate('requester', '_id displayName avatarUrl').lean()
+    ]);
+    return {
+        sentRequsests,
+        receivedRequests
+    };
 }
