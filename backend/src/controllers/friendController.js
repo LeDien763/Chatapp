@@ -2,7 +2,7 @@ import { sendFriendRequestService,
     acceptFriendRequestService, 
     rejectFriendRequestService, 
     getFriendRequestsService, 
-    getFriendsListService } from "../services/friendService";
+    getFriendsListService } from "../services/friendService.js";
 export const sendFriendRequestController = async (req, res) => {
     const requesterId = req.user._id;
     const { recipientId, message } = req.body;
@@ -48,8 +48,8 @@ export const rejectFriendRequestController = async (req, res) => {
 export const getFriendRequestsController = async (req, res) => {
     const userId = req.user.id;
     try {     
-        const friendRequests = await getFriendRequestsService(userId);
-        return res.status(200).json({ friendRequests });
+        const { sentRequsests, receivedRequests } = await getFriendRequestsService(userId);
+        return res.status(200).json({ sentRequsests, receivedRequests });
     } catch (error) {
         return res.status(error.status || 500).json({ message: error.message });
     }
