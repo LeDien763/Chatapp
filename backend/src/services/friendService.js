@@ -2,6 +2,7 @@ import Friend from '../models/Friend.js';
 import User from '../models/User.js';
 import FriendRequest from '../models/FriendRequest.js';
 export const sendFriendRequestService = async (requesterId, recipientId, message) => {
+    try {
     if (requesterId === recipientId) {
         throw { status: 400, message: "You cannot send a friend request to yourself." };
     }
@@ -38,8 +39,12 @@ export const sendFriendRequestService = async (requesterId, recipientId, message
     });
     await friendRequest.save();
     return friendRequest;
+    } catch (error) {
+        throw { status: error.status || 500, message: error.message || "Failed to send friend request." };
+    }
 };
 export const acceptFriendRequestService = async (requestId, recipientId) => {
+    try {
     if (!requestId) {
         throw { status: 400, message: "Request ID is required." };
     }
@@ -77,8 +82,12 @@ export const acceptFriendRequestService = async (requestId, recipientId) => {
         .lean();
 
     return requester;
+    } catch (error) {
+        throw { status: error.status || 500, message: error.message || "Failed to accept friend request." };
+    }
 };
 export const rejectFriendRequestService = async (requestId, recipientId) => {
+    try {
     if (!requestId) {
         throw { status: 400, message: "Request ID is required." };
     }
@@ -91,8 +100,12 @@ export const rejectFriendRequestService = async (requestId, recipientId) => {
     }
     await FriendRequest.findByIdAndDelete(requestId);
     return friendRequest;
+    } catch (error) {
+        throw { status: error.status || 500, message: error.message || "Failed to reject friend request." };
+    }
 };
 export const removeFriendService = async (userId, friendId) => {
+    try {
     if (!userId) {
         throw { status: 400, message: "User ID is required." };
     }
@@ -109,13 +122,17 @@ export const removeFriendService = async (userId, friendId) => {
         throw { status: 404, message: "Friend not found." };
     }
     await Friend.findByIdAndDelete(friend._id);
+    } catch (error) {
+        throw { status: error.status || 500, message: error.message || "Failed to remove friend." };
+    }
 };
 export const getFriendsListService = async (userId) => {
-    if (!userId) {
-        throw { status: 400, message: "User ID is required." };
-    }
-    return await Friend.find({
-        $or: [
+    try {
+        if (!userId) {
+            throw { status: 400, message: "User ID is required." };
+        }
+        return await Friend.find({
+            $or: [
             { userA: userId },
             { userB: userId }
         ]
@@ -128,14 +145,21 @@ export const getFriendsListService = async (userId) => {
         path: 'userB',
         select: '_id displayName avatarUrl'
     });
+    } catch (error) {
+        throw { status: error.status || 500, message: error.message || "Failed to fetch friends list." };
+    }
 };
 export const getFriendRequestsService = async (userId) => {
-    const [sentRequsests, receivedRequests] = await Promise.all([
-        FriendRequest.find({ requester: userId }).populate('recipient', '_id displayName avatarUrl').lean(),
-        FriendRequest.find({ recipient: userId }).populate('requester', '_id displayName avatarUrl').lean()
-    ]);
-    return {
-        sentRequsests,
-        receivedRequests
-    };
+    try {
+        const [sentRequests, receivedRequests] = await Promise.all([
+            FriendRequest.find({ requester: userId }).populate('recipient', '_id displayName avatarUrl').lean(),
+            FriendRequest.find({ recipient: userId }).populate('requester', '_id displayName avatarUrl').lean()
+        ]);
+        return {
+            sentRequests,
+            receivedRequests
+        };
+    } catch (error) {
+        throw { status: error.status || 500, message: error.message || "Failed to fetch friend requests." };
+    }
 }
