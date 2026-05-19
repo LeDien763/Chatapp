@@ -8,6 +8,7 @@ const hashToken = (token) => {
 };
 // Đăng ký người dùng
 export const signUp = async ({ userName, password, repassword, email, firstName, lastName }) => {
+    try {
     // Kiểm tra dữ liệu đầu vào
     if (!userName || !password || !email || !firstName || !lastName) {
         throw {
@@ -50,10 +51,17 @@ export const signUp = async ({ userName, password, repassword, email, firstName,
 
     await newUser.save();
     return { message: "Sign-up successful" };
+    } catch (error) {
+        console.error("Error during user sign-up:", error);
+        const status = error.status || 500;
+        const message = error.message || "Internal server error";
+        throw { status, message };
+    }
 };
 
 // Đăng nhập
 export const signIn = async ({ userName, password }) => {
+    try {
     // Kiểm tra dữ liệu đầu vào
     if (!userName || !password) {
         throw {
@@ -100,10 +108,17 @@ export const signIn = async ({ userName, password }) => {
         accessToken,
         refreshToken
     };
+        } catch (error) {
+        console.error("Error during user sign-in:", error);
+        const status = error.status || 500;
+        const message = error.message || "Internal server error";
+        throw { status, message };
+    }
 };
 
 // Đăng xuất
 export const signOut = async (refreshToken) => {
+    try {
     if (!refreshToken) {
         throw {
             status: 400,
@@ -113,10 +128,17 @@ export const signOut = async (refreshToken) => {
     const hashedRefreshToken = hashToken(refreshToken);
     await Session.deleteOne({ refreshToken: hashedRefreshToken });
     return { message: "Sign-out successful" };
+        } catch (error) {
+        console.error("Error during user sign-out:", error);
+        const status = error.status || 500;
+        const message = error.message || "Internal server error";
+        throw { status, message };
+    }   
 };
 
 // Lấy thông tin người dùng (authMe)
 export const authMe = async (userId) => {
+    try {
     const user = await User.findById(userId);
     if (!user) {
         throw {
@@ -131,8 +153,15 @@ export const authMe = async (userId) => {
         email: user.email,
         displayName: user.displayName
     };
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+        const status = error.status || 500;
+        const message = error.message || "Internal server error";
+        throw { status, message };
+    }
 };
 export const refreshToken = async (refreshToken) => {
+    try {
     if (!refreshToken) {
         throw {
             status: 401,
@@ -161,4 +190,10 @@ export const refreshToken = async (refreshToken) => {
     return {
         accessToken: newAccessToken,
     };
+        } catch (error) {
+            console.error("Error during token refresh:", error);
+            const status = error.status || 500;
+            const message = error.message || "Internal server error";
+            throw { status, message };
+        }
 }
